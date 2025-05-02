@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: io-pressure
+  namespace: default
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: io-pressure
+  template:
+    metadata:
+      labels:
+        app: io-pressure
+    spec:
+      containers:
+      - name: disk-writer
+        image: busybox
+        command: ["/bin/sh", "-c", "while true; do dd if=/dev/zero of=/data/testfile bs=10M count=10240; done"]
+        volumeMounts:
+        - mountPath: /data
+          name: data-volume
+        resources:
+          requests:
+            ephemeral-storage: "5Gi"
+          limits:
+            ephemeral-storage: "5Gi"
+      volumes:
+      - name: data-volume
+        emptyDir: {}
+      nodeSelector:
+        kubernetes.io/hostname: aks-testnodepool-13033019-vmss000000
